@@ -1,0 +1,277 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Housekeeping</title>
+    <link rel="stylesheet" href="CSS/styles.css">
+    <!-- <script src="js/scripts.js" defer></script> -->
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Hotel Management</h2>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="reservations.html" class="active">Reservations</a></li>
+            <li><a href="guests.html">Guests</a></li>
+            <li><a href="rooms.html">Rooms</a></li>
+            <li><a href="housekeeping.html">Housekeeping</a></li>
+            <li><a href="food.html">Food & Beverage</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="staff.html">Staff</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <header class="main-header">
+            <h1>Housekeeping</h1>
+        </header>
+        <main>
+            <form action="http://127.0.0.1:5000/housekeeping" method="post" class="reservation-form">
+                <fieldset>
+                    <legend>Houskeeping </legend>
+                    <label for="room-no">Room No:</label>
+                    <input type="text" id="room-no"  placeholder="Enter Room No">
+                    <label for="staff-id">Assigned Staff ID:</label>
+                    <input type="text" id="staff-id" placeholder="Enter Staff ID" required>
+                    <label for="task-type" required>Task Type:</label>
+                    <select id="task-type">
+                        <option value="Select">Select</option>
+                        <option value="Clean">Clean</option>
+                        <option value="under Maintenance">under Maintenance</option>
+                    </select>
+                </fieldset>
+                <br>
+                <fieldset>
+                    <legend>Room Status Update</legend>
+                    <label for="current-status" required>Current Status:</label>
+                    <select id="current-status" >
+                        <option value="Select">Select</option>
+                        <option value="Clean">Clean</option>
+                        <option value="Dirty">Dirty</option>
+                        <option value="under Maintenance">under Maintenance</option>
+                    </select>
+                    <label for="last-clean-date">Last Clean Date:</label>
+                    <input type="date" id="last-clean-date">   
+                </fieldset>
+                <br> 
+                <button type="submit">Save Details</button>
+            </form>
+    <section>
+        <h2>All Services</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Room No</th>
+                    <th>Assigned Staff ID</th>
+                    <th>Task Type</th>
+                    <th>Current Status</th>
+                    <th>Last Clean Date</th>
+                    <th>Update / Delete</th>
+                </tr>
+            </thead>
+            <tbody id="reservations-body">
+                <!-- Rows will be dynamically inserted here -->
+            </tbody>
+        </table>
+    </section>
+</main>
+<footer>
+    <p>© 2024 Hotel Management System. All Rights Reserved.</p>
+</footer>
+</div>
+<script>
+ // Fetch housekeeping data from the server
+const fetchHousekeeping = async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/housekeeping');
+        if (!response.ok) throw new Error('Failed to fetch housekeeping data.');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching housekeeping data:', error);
+        return [];
+    }
+};
+
+// Populate table with housekeeping data
+const populateTable = (tasks) => {
+    const tbody = document.getElementById("reservations-body");
+    tbody.innerHTML = ""; // Clear any existing rows
+
+    tasks.forEach((task) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${task.room_no}</td>
+            <td>${task.staff_id}</td>
+            <td>${task.task_type}</td>
+            <td>${task.current_status}</td>
+            <td>${task.last_clean_date}</td>
+            <td>
+                <button class="update-btn" data-staff-id="${task.staff_id}">Update</button>
+                <button class="delete-btn" data-staff-id="${task.staff_id}">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    // Attach event listeners for update and delete buttons
+    attachActionListeners();
+};
+
+// Fetch and display housekeeping data on page load
+fetchHousekeeping().then(populateTable);
+
+// Handle form submission to store housekeeping details
+document.querySelector('.reservation-form').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    // Get form values
+    const roomNo = document.querySelector('#room-no').value;
+    const staffId = document.querySelector('#staff-id').value;
+    const taskType = document.querySelector('#task-type').value;
+    const currentStatus = document.querySelector('#current-status').value;
+    const lastCleanDate = document.querySelector('#last-clean-date').value;
+
+    // Validation
+    if (!staffId || taskType === "Select" || currentStatus === "Select") {
+        alert("Please fill in all required fields and select appropriate options.");
+        return;
+    }
+
+    // Prepare form data
+    const formData = {
+        room_no: roomNo,
+        staff_id: staffId,
+        task_type: taskType,
+        current_status: currentStatus,
+        last_clean_date: lastCleanDate,
+    };
+
+    // Submit form data
+    fetch('http://127.0.0.1:5000/housekeeping', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.message) {
+                alert('Housekeeping details saved successfully!');
+                fetchHousekeeping().then(populateTable);
+            } else if (data.error && response.status === 409) {
+                alert('Error: Staff ID already exists.');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+});
+
+// Attach listeners to update and delete buttons
+const attachActionListeners = () => {
+    document.querySelectorAll(".update-btn").forEach((button) => {
+        button.addEventListener("click", (event) => {
+            const staffId = event.target.getAttribute("data-staff-id");
+            handleUpdate(staffId);
+        });
+    });
+
+    document.querySelectorAll(".delete-btn").forEach((button) => {
+        button.addEventListener("click", (event) => {
+            const staffId = event.target.getAttribute("data-staff-id");
+            handleDelete(staffId);
+        });
+    });
+};
+
+// Handle update operation
+const handleUpdate = (staffId) => {
+    fetch(`http://127.0.0.1:5000/housekeeping/staff/${staffId}`)
+        .then((response) => response.json())
+        .then((task) => {
+            // Populate form fields with housekeeping data
+            if (task) {
+                document.querySelector('#room-no').value = task.room_no || '';
+                document.querySelector('#staff-id').value = task.staff_id || '';
+                document.querySelector('#task-type').value = task.task_type || '';
+                document.querySelector('#current-status').value = task.current_status || '';
+                document.querySelector('#last-clean-date').value = task.last_clean_date || '';
+
+                // Listen for form submission to update the record (only once)
+                const reservationForm = document.querySelector('.reservation-form');
+                
+                // Remove any previously attached event listeners to avoid multiple attachments
+                reservationForm.removeEventListener('submit', handleFormSubmit);
+
+                // Attach the submit handler once
+                reservationForm.addEventListener('submit', handleFormSubmit);
+
+                function handleFormSubmit(event) {
+                    event.preventDefault();
+
+                    const updatedFormData = {
+                        room_no: document.querySelector('#room-no').value,
+                        staff_id: document.querySelector('#staff-id').value,
+                        task_type: document.querySelector('#task-type').value,
+                        current_status: document.querySelector('#current-status').value,
+                        last_clean_date: document.querySelector('#last-clean-date').value,
+                    };
+
+                    fetch(`http://127.0.0.1:5000/housekeeping/staff/${staffId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(updatedFormData),
+                    })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if (data.message) {
+                                alert('Housekeeping details updated successfully!');
+                                fetchHousekeeping().then(populateTable);
+                            } else {
+                                alert('Error: ' + data.error);
+                            }
+                        })
+                        .catch((error) => {
+                            console.error('Error:', error);
+                        });
+                }
+            } else {
+                alert('No data found for the specified staff ID.');
+            }
+        })
+        .catch((error) => {
+            console.error('Error fetching housekeeping details for update:', error);
+        });
+};
+
+
+// Handle delete operation
+const handleDelete = (staffId) => {
+    if (confirm(`Are you sure you want to delete the record for staff ID ${staffId}?`)) {
+        fetch(`http://127.0.0.1:5000/housekeeping/staff/${staffId}`, {
+            method: 'DELETE',
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.message) {
+                    alert('Record deleted successfully!');
+                    fetchHousekeeping().then(populateTable);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch((error) => {
+                console.error('Error deleting record:', error);
+            });
+    }
+};
+
+</script>
+</body>
+</html>

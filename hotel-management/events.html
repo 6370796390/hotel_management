@@ -1,0 +1,268 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/scripts.js" defer></script>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Hotel Management</h2>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="reservations.html" class="active">Reservations</a></li>
+            <li><a href="guests.html">Guests</a></li>
+            <li><a href="rooms.html">Rooms</a></li>
+            <li><a href="housekeeping.html">Housekeeping</a></li>
+            <li><a href="food.html">Food & Beverage</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="staff.html">Staff</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <header class="main-header">
+            <h1>Events</h1>
+        </header>
+        <main>
+            <form action="http://127.0.0.1:5000/event_reservations" method="post" class="reservation-form">
+               
+                <fieldset>
+                    <legend>Event Details</legend>
+                    <label for="event-name" required>Event Name:</label>
+                    <select id="event-name">
+                        <option value="Select">Select</option>
+                        <option value="Weddings">Weddings</option>
+                        <option value="EngagementParties">Engagement Parties</option>
+                        <option value="BirthdayParties">Birthday Parties</option>
+                        <option value="Anniversaries">Anniversaries</option>
+                        <option value="FamilyReunions">Family Reunions</option>
+                        <option value="GraduationCelebrations">Graduation Celebrations</option>
+                        <option value="BussinessConferences">Bussiness Conferences</option>
+                    </select>
+                    <label for="dateTime">Date and Time:</label>
+                    <input type="datetime-local" id="dateTime" name="dateTime" required>
+            
+                    <label for="duration">Duration:</label>
+                    <input type="text" id="duration" name="duration" required>
+            
+                    <label for="attendees">Number of Attendees:</label>
+                    <input type="number" id="attendees" name="attendees" placeholder="Enter Number of Attendees" required>
+                </fieldset>
+                <br>
+                <fieldset>
+                    <legend>Client Information</legend>
+                    <label for="clientName">Client Name:</label>
+                    <input type="text" id="clientName" placeholder="Enter client name" required>
+            
+                    <label for="contact-number">Contact Number:</label>
+                    <input type="tel" id="contact-number" placeholder="Enter contact number" required>
+            
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" placeholder="Enter Email Address" name="email">
+            
+                    <label for="address">Client Address:</label>
+                    <textarea id="address" name="address" placeholder="Enter Address" rows="3"></textarea>
+                </fieldset>
+                <br>
+                <fieldset>
+                    <legend>Billing Information</legend>
+                    <label for="payment">Total Cost:</label>
+                    <input type="no" id="payment" disabled>
+                </fieldset>
+                <br>
+                <button type="submit">Submit Reservation</button>
+            </form>
+            <section>
+                <h2>All Reservations</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Event Name</th>
+                            <th>Date and Time</th>
+                            <th>Duration</th>
+                            <th>Number of Attendees</th>
+                            <th>Client Name</th>
+                            <th>Contact Number</th>
+                            <th>Email Address</th>
+                            <th><address>Client Address</address></th>
+                            <th>Total Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-body">
+                        <!-- Rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+        <footer>
+            <p>© 2024 Hotel Management System. All Rights Reserved.</p>
+        </footer>
+    </div>
+</body>
+<script> 
+// JavaScript for Event Reservations Table
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("Event Reservations Table Initialized");
+
+    // Fetch reservations from the backend
+    const fetchEventReservations = async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:5000/event_reservations");
+            if (!response.ok) throw new Error("Failed to fetch event reservations");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching event reservations:", error);
+            return [];
+        }
+    };
+
+    // Populate table with event reservation data
+    const populateTable = (eventReservations) => {
+        const tbody = document.getElementById("reservations-body");
+        tbody.innerHTML = ""; // Clear any existing rows
+
+        eventReservations.forEach((reservation) => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${reservation.id}</td>
+                <td>${reservation.event_name}</td>
+                <td>${reservation.date_time}</td>
+                <td>${reservation.duration}</td>
+                <td>${reservation.attendees}</td>
+                <td>${reservation.client_name}</td>
+                <td>${reservation.contact_number}</td>
+                <td>${reservation.email}</td>
+                <td>${reservation.address}</td>
+                <td>₹${reservation.total_cost}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add row highlighting
+        const rows = document.querySelectorAll("tbody tr");
+        rows.forEach(row => {
+            row.addEventListener("mouseover", () => {
+                row.style.backgroundColor = "#e9ecef";
+            });
+            row.addEventListener("mouseout", () => {
+                row.style.backgroundColor = "";
+            });
+        });
+    };
+    
+    // Add date filter functionality
+    const dateFilterInput = document.createElement("input");
+    dateFilterInput.type = "date";
+    dateFilterInput.placeholder = "Filter by Date";
+    dateFilterInput.style.marginBottom = "20px";
+    dateFilterInput.style.padding = "10px";
+    dateFilterInput.style.width = "15%";
+    const tableSection = document.querySelector("section");
+    tableSection.insertBefore(dateFilterInput, tableSection.querySelector("table"));
+
+    dateFilterInput.addEventListener("change", () => {
+        const filterDate = dateFilterInput.value;
+        if (!filterDate) {
+            fetchEventReservations().then(reservations => {
+                populateTable(reservations);
+            });
+        } else {
+            fetchEventReservations().then(reservations => {
+                const filteredReservations = reservations.filter(reservation => {
+                    const reservationDate = new Date(reservation.date_time);
+                    return reservationDate.toISOString().split('T')[0] === filterDate;
+                });
+                populateTable(filteredReservations);
+            });
+        }
+    });
+
+    // Fetch and display reservations on page load
+    const eventReservations = await fetchEventReservations();
+    populateTable(eventReservations);
+
+    // Automatically calculate and display total cost
+    document.querySelector('.reservation-form').addEventListener('input', () => {
+        const eventName = document.querySelector('#event-name').value;
+        const duration = parseInt(document.querySelector('#duration').value) || 1;
+
+        let basePricePerDay = 0;
+
+        // Determine base price based on event type
+        switch (eventName) {
+            case "Weddings":
+            case "EngagementParties":
+                basePricePerDay = 40000;
+                break;
+            case "BirthdayParties":
+            case "Anniversaries":
+            case "FamilyReunions":
+                basePricePerDay = 4000;
+                break;
+            case "GraduationCelebrations":
+            case "BussinessConferences":
+                basePricePerDay = 30000;
+                break;
+            default:
+                document.getElementById("payment").value = "";
+                return;
+        }
+
+        // Calculate total cost before GST
+        let totalCost = basePricePerDay * duration;
+
+        // Apply GST
+        const gstRate = totalCost > 10000 ? 0.12 : 0.06;
+        totalCost += totalCost * gstRate;
+
+        // Update payment field
+        document.getElementById("payment").value =  `₹${totalCost.toFixed(2)}`;
+    });
+
+    // Handle form submission to store reservation
+    document.querySelector('.reservation-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const formData = {
+            event_name: document.querySelector('#event-name').value,
+            date_time: document.querySelector('#dateTime').value,
+            duration: parseInt(document.querySelector('#duration').value),
+            attendees: document.querySelector('#attendees').value,
+            client_name: document.querySelector('#clientName').value,
+            contact_number: document.querySelector('#contact-number').value,
+            email: document.querySelector('#email').value,
+            address: document.querySelector('#address').value,
+            total_cost: parseFloat(document.querySelector("#payment").value.replace(/[₹,]/g, "")) || 0,
+        };
+
+        fetch('http://127.0.0.1:5000/event_reservations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert('Event reservation created successfully!');
+                // Refresh the table after new reservation
+                fetchEventReservations().then(updatedReservations => {
+                    populateTable(updatedReservations);
+                });
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+});
+
+</script>
+</html>

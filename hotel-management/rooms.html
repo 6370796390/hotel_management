@@ -1,0 +1,306 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Management</title>
+    <link rel="stylesheet" href="CSS/styles.css">
+    <!-- <script src="js/scripts.js" defer></script> -->
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Hotel Management</h2>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="reservations.html" class="active">Reservations</a></li>
+            <li><a href="guests.html">Guests</a></li>
+            <li><a href="rooms.html">Rooms</a></li>
+            <li><a href="housekeeping.html">Housekeeping</a></li>
+            <li><a href="food.html">Food & Beverage</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="staff.html">Staff</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </div>
+<div class="content">
+    <header class="main-header">
+        <h1>Room Management</h1>
+    </header>
+    <main>
+        <form action="http://127.0.0.1:5000/rooms" method="post" class="reservation-form">
+            <fieldset>
+                <legend>Rooms Details </legend>
+                <label for="room-no">Room No:</label>
+                <input type="number" id="room-no"  placeholder="Enter Room No">
+
+                <label for="room-category" required>Room Category:</label>
+                <select id="room-category">
+                    <option value="Select">Select</option>
+                    <option value="suite">Suite</option>
+                    <option value="deluxe">Deluxe</option>
+                    <option value="superdelux">Super Delux</option>
+                </select>
+
+<label for="room-Feature" required>Room Feature:</label>
+<select id="room-Feature">
+    <option value="Select">Select</option>
+    <option value="Sea Facing">Sea Facing</option>
+    <option value="Sea Facing with balcony">Sea Facing with balcony</option>
+    <option value="Balcony">Balcony</option>
+</select>
+
+<label for="current-status" required>Current Status:</label>
+<select id="current-status">
+    <option value="Select">Select</option>
+    <option value="Available">Available</option>
+    <option value="Occupied">Occupied</option>
+    <option value="Under Maintenance">Under Maintenance</option>
+</select>
+            </fieldset>
+            <br>
+            <button type="submit">Save Details</button>
+        </form>
+        <section>
+            <h2>All Rooms</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Room No</th>
+                        <th>Room Category</th>
+                        <th>Room Feature</th>
+                        <th>Current Status</th>
+                        <th>Update/Delete</th>
+                    </tr>
+                </thead>
+                <tbody id="reservations-body">
+                    <!-- Rows will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </section>
+        <footer>
+            <p>© 2024 Hotel Management System. All Rights Reserved.</p>
+        </footer>
+    </div>         
+    <script>
+const fetchRooms = async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/rooms');
+        if (!response.ok) throw new Error('Failed to fetch rooms.');
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching rooms:', error);
+        return [];
+    }
+};
+
+// Populate table with room data
+const populateTable = (rooms) => {
+    const tbody = document.getElementById("reservations-body");
+    tbody.innerHTML = ""; // Clear any existing rows
+
+    rooms.forEach((room) => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${room.room_no}</td>
+            <td>${room.room_category}</td>
+            <td>${room.room_feature}</td>
+            <td>${room.current_status}</td>
+            <td>
+                <button class="update-btn" data-room-no="${room.room_no}">Update</button>
+                <button class="delete-btn" data-room-no="${room.room_no}">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+
+    const rows = document.querySelectorAll("tbody tr");
+    rows.forEach(row => {
+        row.addEventListener("mouseover", () => {
+            row.style.backgroundColor = "#e9ecef";
+        });
+        row.addEventListener("mouseout", () => {
+            row.style.backgroundColor = "";
+        });
+    });
+
+    attachActionListeners();
+};
+
+fetchRooms().then(populateTable);
+
+const handleFormSubmit = (event) => {
+    event.preventDefault();
+
+    const roomNo = document.querySelector('#room-no').value.trim();
+    const roomCategory = document.querySelector('#room-category').value;
+    const roomFeature = document.querySelector('#room-Feature').value;
+    const currentStatus = document.querySelector('#current-status').value;
+
+    if (!roomNo || roomCategory === "Select" || roomFeature === "Select" || currentStatus === "Select") {
+        alert("Please fill in all fields and select appropriate options.");
+        return;
+    }
+
+    const formData = {
+        room_no: roomNo,
+        room_category: roomCategory,
+        room_feature: roomFeature,
+        current_status: currentStatus.toLowerCase(),
+    };
+
+    fetch('http://127.0.0.1:5000/rooms', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+    })
+    .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) {
+            alert(`Error: ${data.error || 'Failed to save room details.'}`);
+        } else {
+            alert('Room details saved successfully!');
+            fetchRooms().then(populateTable);
+        }
+    })
+    .catch(error => {
+        console.error('Error during fetch:', error);
+        alert('An unexpected error occurred. Please try again.');
+    });
+};
+
+document.querySelector('.reservation-form').addEventListener('submit', handleFormSubmit);
+
+const attachActionListeners = () => {
+    document.querySelectorAll(".update-btn").forEach(button => {
+        button.addEventListener("click", (event) => {
+            const roomNo = event.target.getAttribute("data-room-no");
+            handleUpdate(roomNo);
+        });
+    });
+
+    document.querySelectorAll(".delete-btn").forEach(button => {
+        button.addEventListener("click", (event) => {
+            const roomNo = event.target.getAttribute("data-room-no");
+            handleDelete(roomNo);
+        });
+    });
+};
+
+// const handleUpdate = (roomNo) => {
+//     fetch(`http://127.0.0.1:5000/rooms/${roomNo}`)
+//         .then(response => response.json())
+//         .then(room => {
+//             document.querySelector('#room-no').value = room.room_no;
+//             document.querySelector('#room-category').value = room.room_category;
+//             document.querySelector('#room-Feature').value = room.room_feature;
+//             document.querySelector('#current-status').value = room.current_status.toLowerCase();
+
+//             const form = document.querySelector('.reservation-form');
+//             form.removeEventListener('submit', handleFormSubmit);
+//             form.addEventListener('submit', function updateSubmit(event) {
+//                 event.preventDefault();
+
+//                 const updatedFormData = {
+//                     room_category: document.querySelector('#room-category').value,
+//                     room_feature: document.querySelector('#room-Feature').value,
+//                     current_status: document.querySelector('#current-status').value.toLowerCase(),
+//                 };
+
+//                 fetch(`http://127.0.0.1:5000/rooms/${roomNo}`, {
+//                     method: 'PUT',
+//                     headers: {
+//                         'Content-Type': 'application/json'
+//                     },
+//                     body: JSON.stringify(updatedFormData)
+//                 })
+//                 .then(response => response.json())
+//                 .then(data => {
+//                     if (data.message) {
+//                         alert('Room details updated successfully!');
+//                         fetchRooms().then(populateTable);
+//                         form.removeEventListener('submit', updateSubmit);
+//                         form.addEventListener('submit', handleFormSubmit);
+//                     } else {
+//                         alert('Error: ' + data.error);
+//                     }
+//                 })
+//                 .catch(error => {
+//                     console.error('Error:', error);
+//                 });
+//             }, { once: true });
+//         })
+//         .catch(error => {
+//             console.error('Error fetching room details for update:', error);
+//         });
+// };
+const handleUpdate = (roomNo) => {
+    fetch(`http://127.0.0.1:5000/rooms/${roomNo}`)
+        .then(response => response.json())
+        .then(room => {
+            document.querySelector('#room-no').value = room.room_no;
+            document.querySelector('#room-category').value = room.room_category;
+            document.querySelector('#room-Feature').value = room.room_feature;
+            document.querySelector('#current-status').value = room.current_status.toLowerCase();
+
+            const form = document.querySelector('.reservation-form');
+            form.removeEventListener('submit', handleFormSubmit);
+            form.addEventListener('submit', function updateSubmit(event) {
+                event.preventDefault();
+
+                const updatedFormData = {
+                    room_category: document.querySelector('#room-category').value,
+                    room_feature: document.querySelector('#room-Feature').value,
+                    current_status: document.querySelector('#current-status').value.toLowerCase(),
+                };
+
+                fetch(`http://127.0.0.1:5000/rooms/${roomNo}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedFormData),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert('Room details updated successfully!');
+                        fetchRooms().then(populateTable);
+                        form.removeEventListener('submit', updateSubmit);
+                        form.addEventListener('submit', handleFormSubmit);
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }, { once: true });
+        })
+        .catch(error => {
+            console.error('Error fetching room details for update:', error);
+        });
+};
+const handleDelete = (roomNo) => {
+    if (confirm(`Are you sure you want to delete room number ${roomNo}?`)) {
+        fetch(`http://127.0.0.1:5000/rooms/${roomNo}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert('Room deleted successfully!');
+                fetchRooms().then(populateTable);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting room:', error);
+        });
+    }
+};
+
+
+    </script>
+</body>
+</html>

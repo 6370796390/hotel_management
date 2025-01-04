@@ -1,0 +1,282 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Management</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- <script src="js/scripts.js" defer></script> -->
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Hotel Management</h2>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="reservations.html" class="active">Reservations</a></li>
+            <li><a href="guests.html">Guests</a></li>
+            <li><a href="rooms.html">Rooms</a></li>
+            <li><a href="housekeeping.html">Housekeeping</a></li>
+            <li><a href="food.html">Food & Beverage</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="staff.html">Staff</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <header class="main-header">
+            <h1>Staff Management</h1>
+        </header>
+        <main>
+            <form action="http://127.0.0.1:5000/staff" method="post" class="reservation-form">
+                <fieldset>
+                    <legend>Staff Details</legend>
+                    <label for="employee-id">Employee ID:</label>
+                    <input type="text" id="employee-id" readonly placeholder="Auto-generated">
+                    <label for="employee-name">Employee Name:</label>
+                    <input type="text" id="employee-name" placeholder="Enter employee name" required>
+    
+                    <label for="role" required>Role/Designation:</label>
+                    <select id="role">
+                        <option value="Select">Select</option>
+                        <option value="general-manager">General Manager</option>
+                        <option value="front-desk-receptionist">Front Desk Receptionist</option>
+                        <option value="concierge">Concierge</option>
+                        <option value="housekeeping-staff">Housekeeping Staff</option>
+                        <option value="chef">Chef</option>
+                        <option value="sous-chef">Sous Chef</option>
+                        <option value="line-cook">Line Cook</option>
+                        <option value="bartender">Bartender</option>
+                        <option value="waiter-waitress">Waiter/Waitress</option>
+                        <option value="event-coordinator">Event Coordinator</option>
+                        <option value="sales-manager">Sales Manager</option>
+                        <option value="marketing-manager">Marketing Manager</option>
+                        <option value="maintenance-technician">Maintenance Technician</option>
+                        <option value="security-guard">Security Guard</option>
+                        <option value="spa-therapist">Spa Therapist</option>
+                        <option value="porter-bellhop">Porter/Bellhop</option>
+                        <option value="laundry-attendant">Laundry Attendant</option>
+                        <option value="room-service-attendant">Room Service Attendant</option>
+                    </select>
+    
+                    <label for="contact-number">Contact Information:</label>
+                    <input type="tel" id="contact-number" placeholder="Enter contact number" required>
+    
+                    <label for="date-of-joining">Date of Joining:</label>
+                    <input type="date" id="date-of-joining" required>
+                </fieldset>
+                <br>
+                <fieldset>
+                    <legend>Shift Management</legend>
+                    <label for="assigned-shift" required>Assigned Shift:</label>
+                    <select id="assigned-shift" name="assigned-shift">
+                        <option value="morning">Morning</option>
+                        <option value="afternoon">Afternoon</option>
+                        <option value="night">Night</option>
+                    </select>
+    
+                    <label for="task-allocation">Task Allocation:</label>
+                    <select id="task-allocation">
+                        <option value="Select">Select</option>
+                         <option value="1">Manage overall hotel operations.</option>
+                            <option value="2">Greet and assist guests at the front desk.</option>
+                            <option value="3">Provide information and special services to guests.</option>
+                            <option value="4">Clean and maintain guest rooms and public areas.</option>
+                            <option value="5">Prepare meals and oversee kitchen operations.</option>
+                            <option value="6">Assist the chef and supervise kitchen staff.</option>
+                            <option value="7">Cook and prepare menu items.</option>
+                            <option value="8">Serve beverages and manage the bar.</option>
+                            <option value="9">Take food and beverage orders from guests.</option>
+                            <option value="10">Plan and manage events hosted at the hotel.</option>
+                            <option value="11">Generate and close sales for hotel services.</option>
+                            <option value="12">Promote the hotel through marketing strategies.</option>
+                            <option value="13">Perform repairs and maintain hotel facilities.</option>
+                            <option value="14">Ensure guest safety and hotel security.</option>
+                            <option value="15">Provide spa and wellness services to guests.</option>
+                            <option value="16">Assist guests with luggage and room navigation.</option>
+                            <option value="17">Wash and iron guest and hotel laundry.</option>
+                            <option value="18">Deliver food and beverage to guest rooms.</option>
+                            <option value="19">Manage the hotel's IT infrastructure.</option>
+                            <option value="20">Oversee employee recruitment, training, and policies.</option>
+                    </select>
+                </fieldset>
+                <br>
+                <button type="submit">Save Details</button>
+            </form>
+            <section>
+                <h2>All Staff</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee ID</th>
+                            <th>Employee Name</th>
+                            <th>Role/Designation</th>
+                            <th>Contact Information</th>
+                            <th>Date of Joining</th>
+                            <th>Assigned Shift</th>
+                            <th>Task Allocation</th>
+                            <th>Update / Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-body">
+                        <!-- Rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </section>            
+        </main>
+        <footer>
+            <p>© 2024 Hotel Management System. All Rights Reserved.</p>
+        </footer>
+    </div>
+
+<script>
+  // JavaScript for Staff Management Table
+
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("Staff Management Table Initialized");
+
+    // Fetch staff details from the backend
+    const fetchStaffDetails = async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:5000/staff");
+            if (!response.ok) throw new Error("Failed to fetch staff details");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching staff details:", error);
+            return [];
+        }
+    };
+
+    // Generate a unique employee ID
+    const generateEmployeeId = () => {
+        const timestamp = Date.now().toString();
+        const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `EMP-${timestamp}-${randomPart}`;
+    };
+
+    // Populate table with staff data
+    const populateTable = (staffDetails) => {
+        const tbody = document.getElementById("reservations-body");
+        tbody.innerHTML = ""; // Clear any existing rows
+
+        staffDetails.forEach((staff) => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${staff.employee_id}</td>
+                <td>${staff.employee_name}</td>
+                <td>${staff.role}</td>
+                <td>${staff.contact_information}</td>
+                <td>${staff.date_of_joining}</td>
+                <td>${staff.assigned_shift}</td>
+                <td>${staff.task_allocation}</td>
+                <td>
+                    <button class="update-button" data-id="${staff.employee_id}">Update</button>
+                    <button class="delete-button" data-id="${staff.employee_id}">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add row highlighting
+        document.querySelectorAll("tbody tr").forEach(row => {
+            row.addEventListener("mouseover", () => {
+                row.style.backgroundColor = "#e9ecef";
+            });
+            row.addEventListener("mouseout", () => {
+                row.style.backgroundColor = "";
+            });
+        });
+
+        // Add update functionality
+        document.querySelectorAll(".update-button").forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const id = event.target.dataset.id;
+                const staff = staffDetails.find(s => s.employee_id === id);
+                if (staff) {
+                    document.querySelector('#employee-id').value = staff.employee_id;
+                    document.querySelector('#employee-name').value = staff.employee_name;
+                    document.querySelector('#role').value = staff.role;
+                    document.querySelector('#contact-number').value = staff.contact_information;
+                    document.querySelector('#date-of-joining').value = staff.date_of_joining;
+                    document.querySelector('#assigned-shift').value = staff.assigned_shift;
+                    document.querySelector('#task-allocation').value = staff.task_allocation;
+
+                    document.querySelector('.reservation-form').dataset.updateId = id;
+                }
+            });
+        });
+
+        // Add delete functionality
+        document.querySelectorAll(".delete-button").forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const id = event.target.dataset.id;
+                const confirmed = confirm("Are you sure you want to delete this staff member?");
+                if (confirmed) {
+                    try {
+                        const response = await fetch(`http://127.0.0.1:5000/staff/${id}`, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            alert("Staff member deleted successfully!");
+                            fetchStaffDetails().then(updatedStaffDetails => {
+                                populateTable(updatedStaffDetails);
+                            });
+                        } else {
+                            alert("Failed to delete staff member.");
+                        }
+                    } catch (error) {
+                        console.error("Error deleting staff member:", error);
+                    }
+                }
+            });
+        });
+    };
+
+    // Fetch and display staff details on page load
+    const staffDetails = await fetchStaffDetails();
+    populateTable(staffDetails);
+
+    // Handle form submission to store or update staff details
+    document.querySelector('.reservation-form').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const formData = {
+            employee_id: this.dataset.updateId || generateEmployeeId(),
+            employee_name: document.querySelector('#employee-name').value,
+            role: document.querySelector('#role').value,
+            contact_information: document.querySelector('#contact-number').value,
+            date_of_joining: document.querySelector('#date-of-joining').value,
+            assigned_shift: document.querySelector('#assigned-shift').value,
+            task_allocation: document.querySelector('#task-allocation').value,
+        };
+
+        const updateId = this.dataset.updateId;
+        const url = updateId ? `http://127.0.0.1:5000/staff/${updateId}` : 'http://127.0.0.1:5000/staff';
+        const method = updateId ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(updateId ? 'Staff details updated successfully!' : 'Staff details saved successfully!');
+                this.reset();
+                delete this.dataset.updateId;
+                fetchStaffDetails().then(updatedStaffDetails => {
+                    populateTable(updatedStaffDetails);
+                });
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guests</title>
+    <link rel="stylesheet" href="CSS/styles.css">
+    <script src="js/scripts.js" defer></script>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Hotel Management</h2>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="reservations.html">Reservations</a></li>
+            <li><a href="guests.html">Guests</a></li>
+            <li><a href="rooms.html">Rooms</a></li>
+            <li><a href="housekeeping.html">Housekeeping</a></li>
+            <li><a href="food.html">Food & Beverage</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="staff.html">Staff</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <header class="main-header">
+            <h1>Guests</h1>
+        </header>
+        <main>
+            <section>
+                <h2>All Reservations</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Guest Name</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Gender</th>
+                            <th>ID Proof Type</th>
+                            <th>ID Proof Number</th>
+                            <th>Address</th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Room</th>
+                            <th>Room Number</th>
+                            <th>Special Requests</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-body">
+                        <!-- Rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </section>            
+        </main>
+        <footer style="position: fixed;">
+            <p>© 2024 Hotel Management System. All Rights Reserved.</p>
+        </footer>
+    </div>
+    <script>
+        // JavaScript for Reservations Table
+        document.addEventListener("DOMContentLoaded", async () => {
+            console.log("Reservations Table Initialized");
+
+            // Fetch reservations from the backend
+            const fetchReservations = async () => {
+                try {
+                    const response = await fetch("http://127.0.0.1:5000/reservations");
+                    if (!response.ok) throw new Error("Failed to fetch reservations");
+                    return await response.json();
+                } catch (error) {
+                    console.error("Error fetching reservations:", error);
+                    return [];
+                }
+            };
+
+            // Populate table with reservation data
+            const populateTable = (reservations) => {
+                const tbody = document.getElementById("reservations-body");
+                tbody.innerHTML = ""; // Clear any existing rows
+
+                reservations.forEach((reservation) => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                        <td>${reservation.id}</td>
+                        <td>${reservation.guest_name}</td>
+                        <td>${reservation.contact_number}</td>
+                        <td>${reservation.email}</td>
+                        <td>${reservation.gender}</td>
+                        <td>${reservation.id_proof_type}</td>
+                        <td>${reservation.id_proof_number}</td>
+                        <td>${reservation.address}</td>
+                        <td>${reservation.check_in}</td>
+                        <td>${reservation.check_out}</td>
+                        <td>${reservation.room_category}</td>
+                        <td>${reservation.room_number}</td>
+                        <td>${reservation.special_requests || "None"}</td>
+                        <td>₹${reservation.price}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                // Add row highlighting
+                const rows = document.querySelectorAll("tbody tr");
+                rows.forEach(row => {
+                    row.addEventListener("mouseover", () => {
+                        row.style.backgroundColor = "#e9ecef";
+                    });
+                    row.addEventListener("mouseout", () => {
+                        row.style.backgroundColor = "";
+                    });
+                });
+
+                // Add sorting functionality
+                const headers = document.querySelectorAll("thead th");
+                headers.forEach((header, index) => {
+                    header.style.cursor = "pointer";
+                    header.addEventListener("click", () => {
+                        const rowsArray = Array.from(rows);
+                        const isAscending = header.classList.toggle("ascending");
+                        rowsArray.sort((a, b) => {
+                            const aText = a.children[index].textContent.trim().toLowerCase();
+                            const bText = b.children[index].textContent.trim().toLowerCase();
+                            return isAscending ? aText.localeCompare(bText) : bText.localeCompare(aText);
+                        });
+                        rowsArray.forEach(row => row.parentNode.appendChild(row));
+                    });
+                });
+            };
+
+            // Add date filter functionality
+            const dateFilterInput = document.createElement("input");
+            dateFilterInput.type = "date";
+            dateFilterInput.placeholder = "Filter by Check-in Date";
+            dateFilterInput.style.marginBottom = "20px";
+            dateFilterInput.style.padding = "10px";
+            dateFilterInput.style.width = "10%";
+            dateFilterInput.style.boxSizing = "border-box";
+            const tableSection = document.querySelector("section");
+            tableSection.insertBefore(dateFilterInput, tableSection.querySelector("table"));
+
+            // Handle filtering by check-in date
+            dateFilterInput.addEventListener("change", () => {
+                const filterDate = dateFilterInput.value;
+                if (!filterDate) {
+                    // If no date is selected, show all rows
+                    fetchReservations().then(reservations => {
+                        populateTable(reservations);
+                    });
+                } else {
+                    // Filter rows by check-in date
+                    fetchReservations().then(reservations => {
+                        const filteredReservations = reservations.filter(reservation => {
+                            const checkInDate = new Date(reservation.check_in);
+                            return checkInDate.toISOString().split('T')[0] === filterDate;
+                        });
+                        populateTable(filteredReservations);
+                    });
+                }
+            });
+
+            // Fetch and display reservations on page load
+            const reservations = await fetchReservations();
+            populateTable(reservations);
+        });
+    </script>
+</body>
+</html>

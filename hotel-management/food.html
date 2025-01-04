@@ -1,0 +1,268 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food & Beverage</title>
+    <link rel="stylesheet" href="CSS/styles.css">
+    <!-- <script src="js/scripts.js" defer></script> -->
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Hotel Management</h2>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="reservations.html" class="active">Reservations</a></li>
+            <li><a href="guests.html">Guests</a></li>
+            <li><a href="rooms.html">Rooms</a></li>
+            <li><a href="housekeeping.html">Housekeeping</a></li>
+            <li><a href="food.html">Food & Beverage</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="staff.html">Staff</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <header class="main-header">
+            <h1>Food & Beverage</h1>
+        </header>
+        <main>
+            <form action="http://127.0.0.1:5000/menus" method="post" class="reservation-form">
+                <fieldset>
+                    <legend>Menu Management </legend>
+                    <label for="Menu Name">Menu Name:</label>
+                    <input type="text" id="Menu Name">
+                    <label for="comment">Menu Description:</label>
+                    <textarea id="comment" name="comment" placeholder="Write Menu Description"></textarea><br>
+    
+                    <label for="Menu Category" required>Menu Category:</label>
+                    <select id="Menu Category">
+                        <option value="Select">Select</option>
+                        <option value="Veg">Veg</option>
+                        <option value="Non-veg">Non-veg</option>
+                        <option value="Vegan">Vegan</option>
+                      
+                    </select>
+                    <label for="Price">Price:</label>
+                    <input type="number" id="Price"  placeholder=" Enter Price">
+                </fieldset>
+                <br>
+                <fieldset>
+                    <legend>Order Details</legend>
+                    <label for="item Name" required>item Name:</label>
+                    <input type="text" id="item Name">
+    
+                    <label for="room-number" required>Guest Room No:</label>
+                    <input type="text" id="room-number">
+                    <label for="Ordered_Item">Ordered Item / Quantity:</label>
+                    <input type="number" id="Ordered_Item" name="ordered_quantity" placeholder="Enter Quantity">
+                </fieldset>
+                <fieldset>
+                    <legend>Billing information</legend>
+                    <label for="Order_Total">Order Total:</label>
+                    <input type="text" id="Order_Total" name="order_total" disabled placeholder="Calculated Automatically">
+                </fieldset>
+                <br>
+                <button type="submit">Save Details</button>
+            </form>
+            <section>
+                <h2>All Food Reservation</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Menu Name</th>
+                            <th>Menu Description</th>
+                            <th>Menu Category</th>
+                            <th>Price</th>
+                            <th>Item Name</th>
+                            <th>Room No</th>
+                            <th>Ordered Item /Quantity</th>
+                            <th>Order Total</th>
+                            <th>Delete / Update</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-body">
+                        <!-- Rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+        <footer>
+            <p>© 2024 Hotel Management System. All Rights Reserved.</p>
+        </footer>
+    </div>
+    <script>
+ // JavaScript for Menu and Order Management
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("Menu Management Initialized");
+
+    // Fetch menu data from the backend
+    const fetchMenuData = async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:5000/menus");
+            if (!response.ok) throw new Error("Failed to fetch menu data");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching menu data:", error);
+            return [];
+        }
+    };
+
+    // Populate table with menu data
+    const populateTable = (menuData) => {
+        const tbody = document.getElementById("reservations-body");
+        tbody.innerHTML = ""; // Clear any existing rows
+
+        menuData.forEach((menu) => {
+            const row = document.createElement("tr");
+
+            // Calculate Order Total
+            const price = parseFloat(menu.price || 0);
+            const quantity = parseInt(menu.ordered_quantity || 0, 10);
+            const orderTotal = (price * quantity * 1.12).toFixed(2); // 12% GST applied
+
+            row.innerHTML = `
+                <td>${menu.id}</td>
+                <td>${menu.menu_name}</td>
+                <td>${menu.menu_description}</td>
+                <td>${menu.menu_category}</td>
+                <td>₹${price}</td>
+                <td>${menu.item_name}</td>
+                <td>${menu.room_number}</td>
+                <td>${menu.ordered_quantity}</td>
+                <td>₹${orderTotal}</td>
+                <td>
+                    <button class="update-button" data-id="${menu.id}">Update</button>
+                    <button class="delete-button" data-id="${menu.id}">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    };
+
+    // Function to calculate Order Total dynamically in the form
+    const calculateOrderTotal = () => {
+        const price = parseFloat(document.getElementById("Price").value || 0);
+        const quantity = parseInt(document.getElementById("Ordered_Item").value || 0, 10);
+        const orderTotal = (price * quantity * 1.12).toFixed(2); // 12% GST applied
+        document.getElementById("Order_Total").value = `₹${orderTotal}`;
+    };
+
+    // Attach event listeners to dynamically update Order Total
+    document.getElementById("Price").addEventListener("input", calculateOrderTotal);
+    document.getElementById("Ordered_Item").addEventListener("input", calculateOrderTotal);
+
+    // Fetch and display menu data on page load
+    const menuData = await fetchMenuData();
+    populateTable(menuData);
+
+    // Add delete functionality
+    document.querySelectorAll(".delete-button").forEach(button => {
+        button.addEventListener("click", async (event) => {
+            const id = event.target.dataset.id;
+            const confirmed = confirm("Are you sure you want to delete this?");
+            if (confirmed) {
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/menus/${id}`, {
+                        method: 'DELETE'
+                    });
+                    if (response.ok) {
+                        alert("Deleted successfully!");
+                        const updatedMenuData = await fetchMenuData();
+                        populateTable(updatedMenuData);
+                    } else {
+                        alert("Failed to delete menu item.");
+                    }
+                } catch (error) {
+                    console.error("Error deleting menu item:", error);
+                }
+            }
+        });
+    });
+
+    // Add update functionality
+document.querySelectorAll(".update-button").forEach(button => {
+    button.addEventListener("click", (event) => {
+        const id = event.target.dataset.id;
+        const menu = menuData.find(m => m.id === parseInt(id, 10)); // Ensure id is treated as a number
+        if (menu) {
+            document.getElementById("Menu Name").value = menu.menu_name;
+            document.getElementById("comment").value = menu.menu_description;
+            document.getElementById("Menu Category").value = menu.menu_category;
+            document.getElementById("Price").value = menu.price;
+            document.getElementById("item Name").value = menu.item_name;
+            document.getElementById("room-number").value = menu.room_number;
+            document.getElementById("Ordered_Item").value = menu.ordered_quantity;
+
+            // Store the ID in the form for updating
+            document.querySelector('.reservation-form').dataset.updateId = id;
+        }
+    });
+});
+
+// Form submission for adding or updating menu items
+document.querySelector("form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const menuName = document.getElementById("Menu Name").value;
+    const menuDescription = document.getElementById("comment").value;
+    const menuCategory = document.getElementById("Menu Category").value;
+    const price = document.getElementById("Price").value;
+    const itemName = document.getElementById("item Name").value;
+    const roomNumber = document.getElementById("room-number").value;
+    const orderedItem = document.getElementById("Ordered_Item").value;
+
+    // Validate required fields
+    if (!menuName || !menuCategory || !price || !itemName || !roomNumber || !orderedItem) {
+        alert("All fields are required!");
+        return;
+    }
+
+    // Calculate the order total with 12% GST (to match the backend calculation)
+    const orderTotal = (parseFloat(price) * parseInt(orderedItem, 10) * 1.12).toFixed(2);
+
+    const newMenu = {
+        menu_name: menuName,
+        menu_description: menuDescription,
+        menu_category: menuCategory,
+        price: parseFloat(price),
+        item_name: itemName,
+        room_number: roomNumber,
+        ordered_quantity: parseInt(orderedItem, 10),
+        order_total: parseFloat(orderTotal),
+    };
+
+    const updateId = document.querySelector('.reservation-form').dataset.updateId;
+
+    try {
+        const response = await fetch(updateId ? `http://127.0.0.1:5000/menus/${updateId}` : "http://127.0.0.1:5000/menus", {
+            method: updateId ? "PUT" : "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newMenu),
+        });
+
+        if (!response.ok) {
+            throw new Error(updateId ? "Failed to update menu item" : "Failed to add menu item");
+        }
+
+        console.log(updateId ? "Menu item updated successfully" : "Menu item added successfully");
+
+        // Refresh the table
+        const updatedMenuData = await fetchMenuData();
+        populateTable(updatedMenuData);
+
+        // Reset the form
+        event.target.reset();
+        delete document.querySelector('.reservation-form').dataset.updateId;
+    } catch (error) {
+        console.error(updateId ? "Error updating menu item:" : "Error adding menu item:", error);
+    }
+});
+
+});
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/scripts.js" defer></script>
+    <style>
+        .card-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            padding: 20px;
+            text-align: center;
+        }
+        .card img {
+            max-width: 100%;
+            border-radius: 8px 8px 0 0;
+        }
+        .card-title {
+            font-size: 22px;
+            margin: 15px 0 10px;
+        }
+        .card-text {
+            font-size: 20px;
+            color: black;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Hotel Management</h2>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="reservations.html" class="active">Reservations</a></li>
+            <li><a href="guests.html">Guests</a></li>
+            <li><a href="rooms.html">Rooms</a></li>
+            <li><a href="housekeeping.html">Housekeeping</a></li>
+            <li><a href="food.html">Food & Beverage</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="staff.html">Staff</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <header class="main-header">
+            <h1>Dashboard</h1>
+        </header>
+        <main>
+            <div class="card-container">
+                <div class="card">
+                    <h3 style="color:#020a22" class="card-title">Total Rooms</h3>
+                    <p class="card-text">50</p>
+                </div>
+                <div class="card">
+                    <h3 style="color:green" class="card-title">Available Rooms</h3>
+                    <p class="card-text">20</p>
+                </div>
+                <div class="card">
+                    <h3 style="color:red" class="card-title">Occupied Rooms</h3>
+                    <p class="card-text">30</p>
+                </div>
+            </div>
+            <section>
+                <h2>STAFF DETAILS</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee ID</th>
+                            <th>Employee Name</th>
+                            <th>Role/Designation</th>
+                            <th>Contact Information</th>
+                            <th>Date of Joining</th>
+                            <th>Assigned Shift</th>
+                            <th>Task Allocation</th>
+                            <th>Update / Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-body">
+                        <!-- Rows will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </section>  
+        </main>
+        <footer style="position: fixed; " >
+            <p>© 2024 Hotel Management System. All Rights Reserved.</p>
+        </footer>
+    </div>
+    <script>
+         // JavaScript for Staff Management Table
+
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("Staff Management Table Initialized");
+
+    // Fetch staff details from the backend
+    const fetchStaffDetails = async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:5000/staff");
+            if (!response.ok) throw new Error("Failed to fetch staff details");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching staff details:", error);
+            return [];
+        }
+    };
+
+    // Generate a unique employee ID
+    const generateEmployeeId = () => {
+        const timestamp = Date.now().toString();
+        const randomPart = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        return `EMP-${timestamp}-${randomPart}`;
+    };
+
+    // Populate table with staff data
+    const populateTable = (staffDetails) => {
+        const tbody = document.getElementById("reservations-body");
+        tbody.innerHTML = ""; // Clear any existing rows
+
+        staffDetails.forEach((staff) => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${staff.employee_id}</td>
+                <td>${staff.employee_name}</td>
+                <td>${staff.role}</td>
+                <td>${staff.contact_information}</td>
+                <td>${staff.date_of_joining}</td>
+                <td>${staff.assigned_shift}</td>
+                <td>${staff.task_allocation}</td>
+                <td>
+                    <button class="update-button" data-id="${staff.employee_id}">Update</button>
+                    <button class="delete-button" data-id="${staff.employee_id}">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add row highlighting
+        document.querySelectorAll("tbody tr").forEach(row => {
+            row.addEventListener("mouseover", () => {
+                row.style.backgroundColor = "#e9ecef";
+            });
+            row.addEventListener("mouseout", () => {
+                row.style.backgroundColor = "";
+            });
+        });
+
+        // Add update functionality
+        document.querySelectorAll(".update-button").forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const id = event.target.dataset.id;
+                const staff = staffDetails.find(s => s.employee_id === id);
+                if (staff) {
+                    document.querySelector('#employee-id').value = staff.employee_id;
+                    document.querySelector('#employee-name').value = staff.employee_name;
+                    document.querySelector('#role').value = staff.role;
+                    document.querySelector('#contact-number').value = staff.contact_information;
+                    document.querySelector('#date-of-joining').value = staff.date_of_joining;
+                    document.querySelector('#assigned-shift').value = staff.assigned_shift;
+                    document.querySelector('#task-allocation').value = staff.task_allocation;
+
+                    document.querySelector('.reservation-form').dataset.updateId = id;
+                }
+            });
+        });
+
+        // Add delete functionality
+        document.querySelectorAll(".delete-button").forEach(button => {
+            button.addEventListener("click", async (event) => {
+                const id = event.target.dataset.id;
+                const confirmed = confirm("Are you sure you want to delete this staff member?");
+                if (confirmed) {
+                    try {
+                        const response = await fetch(`http://127.0.0.1:5000/staff/${id}`, {
+                            method: 'DELETE'
+                        });
+                        if (response.ok) {
+                            alert("Staff member deleted successfully!");
+                            fetchStaffDetails().then(updatedStaffDetails => {
+                                populateTable(updatedStaffDetails);
+                            });
+                        } else {
+                            alert("Failed to delete staff member.");
+                        }
+                    } catch (error) {
+                        console.error("Error deleting staff member:", error);
+                    }
+                }
+            });
+        });
+    };
+
+    // Fetch and display staff details on page load
+    const staffDetails = await fetchStaffDetails();
+    populateTable(staffDetails);
+
+    // Handle form submission to store or update staff details
+    document.querySelector('.reservation-form').addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        const formData = {
+            employee_id: this.dataset.updateId || generateEmployeeId(),
+            employee_name: document.querySelector('#employee-name').value,
+            role: document.querySelector('#role').value,
+            contact_information: document.querySelector('#contact-number').value,
+            date_of_joining: document.querySelector('#date-of-joining').value,
+            assigned_shift: document.querySelector('#assigned-shift').value,
+            task_allocation: document.querySelector('#task-allocation').value,
+        };
+
+        const updateId = this.dataset.updateId;
+        const url = updateId ? `http://127.0.0.1:5000/staff/${updateId}` : 'http://127.0.0.1:5000/staff';
+        const method = updateId ? 'PUT' : 'POST';
+
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(updateId ? 'Staff details updated successfully!' : 'Staff details saved successfully!');
+                this.reset();
+                delete this.dataset.updateId;
+                fetchStaffDetails().then(updatedStaffDetails => {
+                    populateTable(updatedStaffDetails);
+                });
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+});
+    </script>
+</body>
+</html>

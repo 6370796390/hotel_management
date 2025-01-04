@@ -1,0 +1,546 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservations</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/scripts.js" defer></script>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Hotel Management</h2>
+        <ul>
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="reservations.html" class="active">Reservations</a></li>
+            <li><a href="guests.html">Guests</a></li>
+            <li><a href="rooms.html">Rooms</a></li>
+            <li><a href="housekeeping.html">Housekeeping</a></li>
+            <li><a href="food.html">Food & Beverage</a></li>
+            <li><a href="events.html">Events</a></li>
+            <li><a href="staff.html">Staff</a></li>
+            <li><a href="settings.html">Settings</a></li>
+        </ul>
+    </div>
+    <div class="content">
+        <header class="main-header">
+            <h1>Reservations</h1>
+        </header>
+        <main>
+            <form action="http://127.0.0.1:5000/reservations" method="post" class="reservation-form">
+               
+                <fieldset>
+                    <legend>Guest Details</legend>
+                    <label for="guest-name">Guest Name:</label>
+                    <input type="text" id="guest-name" placeholder="Enter guest name" required>
+                    
+                    <label for="contact-number">Contact Number:</label>
+                    <input type="tel" id="contact-number" placeholder="Enter contact number" required>
+
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" placeholder="Enter email address" required>
+                    <label for="gender" required>Gender:</label>
+                    <select id="gender">
+                        <option value="Select">Select</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="others">Others</option>
+                    </select>
+
+                    <label for="id-proof" required>ID Proof Type:</label>
+                    <select id="id-proof">
+                        <option value="Select">Select</option>
+                        <option value="aadhar">Aadhar</option>
+                        <option value="pan">Pan Card</option>
+                        <option value="passport">Passport</option>
+                    </select>
+
+                    <label for="id-proof-number">ID Proof Number:</label>
+                    <input type="text" id="id-proof-number" placeholder="Enter ID proof number" required>
+
+                    <label for="address">Address</label>
+                    <input type="text" id="address" placeholder="Enter Address " required>
+
+                </fieldset>
+                <br>
+                <fieldset>
+                    <legend>Booking Details</legend>
+                    <label for="check-in">Check-In Date:</label>
+                    <input type="date" id="check-in" required>
+
+                    <label for="check-out">Check-Out Date:</label>
+                    <input type="date" id="check-out" required>
+
+                    <label for="room-category">Room Category:</label>
+                    <select id="room-category">
+                        <option value="Select">Select</option>
+                        <option value="suite">Suite</option>
+                        <option value="deluxe">Deluxe</option>
+                        <option value="superdelux">Super Deluxe</option>
+                    </select>
+
+                    <label for="room-number">Room Number:</label>
+                    <input type ="number" id="room-number" placeholder="Enter room number">
+                        
+
+                    <label for="special-requests">Special Requests:</label>
+                    <textarea id="special-requests" placeholder="Enter any special requests"></textarea>
+                   
+                    <label for="payment">Price</label>
+                    <input type="no" id="payment" disabled>
+                </fieldset>
+                <br>
+                <button type="submit">Submit Reservation</button>
+            </form>
+            <section>
+                <h2>All Reservations</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Guest Name</th>
+                            <th>Contact</th>
+                            <th>Email</th>
+                            <th>Gender</th>
+                            <th>ID Proof Type</th>
+                            <th>ID Proof Number</th>
+                            <th><address>Address</address></th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Room</th>
+                            <th>Room Number</th>
+                            <th>Special Requests</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-body">
+                    </tbody>
+                </table>
+            </section>
+        </main>
+        <footer>
+            <p>© 2024 Hotel Management System. All Rights Reserved.</p>
+        </footer>
+    </div>
+<script>  
+// // JavaScript for Reservations Table
+// document.addEventListener("DOMContentLoaded", async () => {
+//     console.log("Reservations Table Initialized");
+
+//     // Fetch reservations from the backend
+//     const fetchReservations = async () => {
+//         try {
+//             const response = await fetch("http://127.0.0.1:5000/reservations");
+//             if (!response.ok) throw new Error("Failed to fetch reservations");
+//             return await response.json();
+//         } catch (error) {
+//             console.error("Error fetching reservations:", error);
+//             return [];
+//         }
+//     };
+
+//     // Populate table with reservation data
+//     const populateTable = (reservations) => {
+//         const tbody = document.getElementById("reservations-body");
+//         tbody.innerHTML = ""; // Clear any existing rows
+
+//         reservations.forEach((reservation) => {
+//             const row = document.createElement("tr");
+
+//             row.innerHTML = `
+//                 <td>${reservation.id}</td>
+//                 <td>${reservation.guest_name}</td>
+//                 <td>${reservation.contact_number}</td>
+//                 <td>${reservation.email}</td>
+//                 <td>${reservation.gender}</td>
+//                 <td>${reservation.id_proof_type}</td>
+//                 <td>${reservation.id_proof_number}</td>
+//                 <td>${reservation.address}</td>
+//                 <td>${reservation.check_in}</td>
+//                 <td>${reservation.check_out}</td>
+//                 <td>${reservation.room_category}</td>
+//                 <td>${reservation.room_number}</td>
+//                 <td>${reservation.special_requests || "None"}</td>
+//                 <td>₹${reservation.price}</td>
+//             `;
+//             tbody.appendChild(row);
+//         });
+
+//         // Add row highlighting
+//         const rows = document.querySelectorAll("tbody tr");
+//         rows.forEach(row => {
+//             row.addEventListener("mouseover", () => {
+//                 row.style.backgroundColor = "#e9ecef";
+//             });
+//             row.addEventListener("mouseout", () => {
+//                 row.style.backgroundColor = "";
+//             });
+//         });
+
+//         // Add sorting functionality
+//         const headers = document.querySelectorAll("thead th");
+//         headers.forEach((header, index) => {
+//             header.style.cursor = "pointer";
+//             header.addEventListener("click", () => {
+//                 const rowsArray = Array.from(rows);
+//                 const isAscending = header.classList.toggle("ascending");
+//                 rowsArray.sort((a, b) => {
+//                     const aText = a.children[index].textContent.trim().toLowerCase();
+//                     const bText = b.children[index].textContent.trim().toLowerCase();
+//                     return isAscending ? aText.localeCompare(bText) : bText.localeCompare(aText);
+//                 });
+//                 rowsArray.forEach(row => row.parentNode.appendChild(row));
+//             });
+//         });
+//     };
+//      // Add date filter functionality
+//      const dateFilterInput = document.createElement("input");
+//     dateFilterInput.type = "date";
+//     dateFilterInput.placeholder = "Filter by Check-in Date";
+//     dateFilterInput.style.marginBottom = "20px";
+//     dateFilterInput.style.padding = "10px";
+//     dateFilterInput.style.width = "10%";
+//     dateFilterInput.style.boxSizing = "border-box";
+//     const tableSection = document.querySelector("section");
+//     tableSection.insertBefore(dateFilterInput, tableSection.querySelector("table"));
+
+//     // Handle filtering by check-in date
+//     dateFilterInput.addEventListener("change", () => {
+//         const filterDate = dateFilterInput.value;
+//         if (!filterDate) {
+//             // If no date is selected, show all rows
+//             fetchReservations().then(reservations => {
+//                 populateTable(reservations);
+//             });
+//         } else {
+//             // Filter rows by check-in date
+//             fetchReservations().then(reservations => {
+//                 const filteredReservations = reservations.filter(reservation => {
+//                     const checkInDate = new Date(reservation.check_in);
+//                     return checkInDate.toISOString().split('T')[0] === filterDate;
+//                 });
+//                 populateTable(filteredReservations);
+//             });
+//         }
+//     });
+
+
+//     // Fetch and display reservations on page load
+//     const reservations = await fetchReservations();
+//     populateTable(reservations);
+
+//     // Handle form submission to store reservation
+//     document.querySelector('.reservation-form').addEventListener('submit', function(event) {
+//         event.preventDefault();
+
+//         const formData = {
+//             guest_name: document.querySelector('#guest-name').value,
+//             contact_number: document.querySelector('#contact-number').value,
+//             email: document.querySelector('#email').value,
+//             gender: document.querySelector('#gender').value,
+//             id_proof_type: document.querySelector('#id-proof').value,
+//             id_proof_number: document.querySelector('#id-proof-number').value,
+//             address: document.querySelector('#address').value,
+//             check_in: document.querySelector('#check-in').value,
+//             check_out: document.querySelector('#check-out').value,
+//             room_category: document.querySelector('#room-category').value,
+//             room_number: document.querySelector('#room-number').value,
+//             special_requests: document.querySelector('#special-requests').value,
+//             price: parseFloat(document.querySelector("#payment").value.replace(/[₹,]/g, "")) || 0,
+//         };
+
+//         fetch('http://127.0.0.1:5000/reservations', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json'
+//             },
+//             body: JSON.stringify(formData)
+//         })
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.message) {
+//                 alert('Reservation created successfully!');
+//                 // Refresh the table after new reservation
+//                 fetchReservations().then(updatedReservations => {
+//                     populateTable(updatedReservations);
+//                 });
+//             } else {
+//                 alert('Error: ' + data.error);
+//             }
+//         })
+//         .catch(error => {
+//             console.error('Error:', error);
+//         });
+//     });
+
+//     document.getElementById("room-category").addEventListener("change", function () {
+//         const category = this.value;
+//         let basePrice = 0;
+//         let gstRate = 0;
+
+//         // Set base price and GST rate based on room category
+//         switch (category) {
+//             case "suite":
+//                 basePrice = 1500;
+//                 gstRate = 0.12;
+//                 break;
+//             case "deluxe":
+//                 basePrice = 3000;
+//                 gstRate = 0.18;
+//                 break;
+//             case "superdelux":
+//                 basePrice = 5000;
+//                 gstRate = 0.18;
+//                 break;
+//             default:
+//                 document.getElementById("payment").value = "";
+//                 return;
+//         }
+
+//         // Get check-in and check-out dates
+//         const checkInDate = document.getElementById("check-in").value;
+//         const checkOutDate = document.getElementById("check-out").value;
+
+//         // Calculate the number of nights
+//         if (checkInDate && checkOutDate) {
+//             const checkIn = new Date(checkInDate);
+//             const checkOut = new Date(checkOutDate);
+
+//             if (checkOut >= checkIn) {
+//                 const timeDifference = checkOut - checkIn;
+//                 const nights = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+//                 // Calculate the final price
+//                 const totalBasePrice = basePrice * nights;
+//                 const finalPrice = totalBasePrice + totalBasePrice * gstRate;
+
+//                 document.getElementById("payment").value = `₹${finalPrice.toFixed(2)}`;
+//             } else {
+//                 alert("Check-out date must be the same as or after the check-in date.");
+//                 document.getElementById("payment").value = "";
+//             }
+//         } else {
+//             alert("Please select both check-in and check-out dates.");
+//             document.getElementById("payment").value = "";
+//         }
+//     });
+// });
+// JavaScript for Reservations Table
+
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("Reservations Table Initialized");
+
+    // Fetch reservations from the backend
+    const fetchReservations = async () => {
+        try {
+            const response = await fetch("http://127.0.0.1:5000/reservations");
+            if (!response.ok) throw new Error("Failed to fetch reservations");
+            return await response.json();
+        } catch (error) {
+            console.error("Error fetching reservations:", error);
+            return [];
+        }
+    };
+
+    // Populate table with reservation data
+    const populateTable = (reservations) => {
+        const tbody = document.getElementById("reservations-body");
+        tbody.innerHTML = ""; // Clear any existing rows
+
+        reservations.forEach((reservation) => {
+            const row = document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${reservation.id}</td>
+                <td>${reservation.guest_name}</td>
+                <td>${reservation.contact_number}</td>
+                <td>${reservation.email}</td>
+                <td>${reservation.gender}</td>
+                <td>${reservation.id_proof_type}</td>
+                <td>${reservation.id_proof_number}</td>
+                <td>${reservation.address}</td>
+                <td>${reservation.check_in}</td>
+                <td>${reservation.check_out}</td>
+                <td>${reservation.room_category}</td>
+                <td>${reservation.room_number}</td>
+                <td>${reservation.special_requests || "None"}</td>
+                <td>₹${reservation.price}</td>
+                <td><button class="update-btn" data-id="${reservation.id}">Update</button></td>
+                <td><button class="delete-btn" data-id="${reservation.id}">Delete</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        attachEventListeners();
+    };
+
+    // Add event listeners for update and delete buttons
+    const attachEventListeners = () => {
+        document.querySelectorAll(".update-btn").forEach(button => {
+            button.addEventListener("click", handleUpdate);
+        });
+
+        document.querySelectorAll(".delete-btn").forEach(button => {
+            button.addEventListener("click", handleDelete);
+        });
+    };
+
+    // Handle updating a reservation
+    const handleUpdate = (event) => {
+        const id = event.target.getAttribute("data-id");
+        // Logic to handle update (can include fetching data into a form for editing)
+        alert(`Update functionality for reservation ID: ${id} coming soon!`);
+    };
+
+    // Handle deleting a reservation
+    const handleDelete = async (event) => {
+        const id = event.target.getAttribute("data-id");
+        const confirmDelete = confirm("Are you sure you want to delete this reservation?");
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch(`http://127.0.0.1:5000/reservations/${id}`, {
+                method: 'DELETE',
+            });
+            const data = await response.json();
+
+            if (data.message) {
+                alert('Reservation deleted successfully!');
+                // Refresh the table after deletion
+                fetchReservations().then(updatedReservations => {
+                    populateTable(updatedReservations);
+                });
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
+    // Fetch and display reservations on page load
+    const reservations = await fetchReservations();
+    populateTable(reservations);
+
+    // Handle form submission to store reservation
+    document.querySelector('.reservation-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const formData = {
+            guest_name: document.querySelector('#guest-name').value,
+            contact_number: document.querySelector('#contact-number').value,
+            email: document.querySelector('#email').value,
+            gender: document.querySelector('#gender').value,
+            id_proof_type: document.querySelector('#id-proof').value,
+            id_proof_number: document.querySelector('#id-proof-number').value,
+            address: document.querySelector('#address').value,
+            check_in: document.querySelector('#check-in').value,
+            check_out: document.querySelector('#check-out').value,
+            room_category: document.querySelector('#room-category').value,
+            room_number: parseInt(document.querySelector('#room-number').value),
+            special_requests: document.querySelector('#special-requests').value,
+            price: parseFloat(document.querySelector("#payment").value.replace(/[₹,]/g, "")) || 0,
+        };
+
+        fetch('http://127.0.0.1:5000/reservations', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert('Reservation created successfully!');
+                fetchReservations().then(updatedReservations => {
+                    populateTable(updatedReservations);
+                });
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+    document.getElementById("room-category").addEventListener("change", function () {
+        const category = this.value;
+        let basePrice = 0;
+        let gstRate = 0;
+
+        switch (category) {
+            case "suite":
+                basePrice = 1500;
+                gstRate = 0.12;
+                break;
+            case "deluxe":
+                basePrice = 3000;
+                gstRate = 0.18;
+                break;
+            case "superdelux":
+                basePrice = 5000;
+                gstRate = 0.18;
+                break;
+            default:
+                document.getElementById("payment").value = "";
+                return;
+        }
+
+        const checkInDate = document.getElementById("check-in").value;
+        const checkOutDate = document.getElementById("check-out").value;
+
+        if (checkInDate && checkOutDate) {
+            const checkIn = new Date(checkInDate);
+            const checkOut = new Date(checkOutDate);
+
+            if (checkOut >= checkIn) {
+                const timeDifference = checkOut - checkIn;
+                const nights = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+
+                const totalBasePrice = basePrice * nights;
+                const finalPrice = totalBasePrice + totalBasePrice * gstRate;
+
+                document.getElementById("payment").value = `₹${finalPrice.toFixed(2)}`;
+            } else {
+                alert("Check-out date must be the same as or after the check-in date.");
+                document.getElementById("payment").value = "";
+            }
+        } else {
+            alert("Please select both check-in and check-out dates.");
+            document.getElementById("payment").value = "";
+        }
+    });
+
+    // Date filter functionality
+    const dateFilterInput = document.createElement("input");
+    dateFilterInput.type = "date";
+    dateFilterInput.placeholder = "Filter by Check-in Date";
+    dateFilterInput.style.marginBottom = "20px";
+    dateFilterInput.style.padding = "10px";
+    dateFilterInput.style.width = "10%";
+    dateFilterInput.style.boxSizing = "border-box";
+    const tableSection = document.querySelector("section");
+    tableSection.insertBefore(dateFilterInput, tableSection.querySelector("table"));
+
+    dateFilterInput.addEventListener("change", () => {
+        const filterDate = dateFilterInput.value;
+        if (!filterDate) {
+            fetchReservations().then(reservations => {
+                populateTable(reservations);
+            });
+        } else {
+            fetchReservations().then(reservations => {
+                const filteredReservations = reservations.filter(reservation => {
+                    const checkInDate = new Date(reservation.check_in);
+                    return checkInDate.toISOString().split('T')[0] === filterDate;
+                });
+                populateTable(filteredReservations);
+            });
+        }
+    });
+});
+
+</script>
+</body>
+</html>
