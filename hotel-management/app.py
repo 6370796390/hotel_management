@@ -5,6 +5,7 @@ import mysql.connector
 from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key = "126945c1bdc73d55bb3d364aed2611f8"
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow CORS for all origins
 
 def get_connection():
@@ -992,6 +993,129 @@ def delete_housekeeping(staff_id):
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": "An internal error occurred."}), 500
+
+@app.route('/admin/register', methods=['POST']) 
+def admin_register():
+    try:
+        data = request.json
+        email = data.get('email')
+        password = data.get('password')
+        confirm_password = data.get('confirm_password')
+
+        if not email or not password or not confirm_password:
+            return jsonify({"error": "All fields are required"}), 400
+
+        if password != confirm_password:
+            return jsonify({"error": "Passwords do not match"}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT email FROM admin WHERE email = %s", (email,))
+        if cursor.fetchone():
+            conn.close()
+            return jsonify({"error": "Email already registered"}), 409
+
+        cursor.execute("INSERT INTO admin (email, password) VALUES (%s, %s)", (email, password))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Registration successful"}), 201
+
+    except mysql.connector.Error as db_err:
+        return jsonify({"error": f"Database error: {db_err}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Internal error: {e}"}), 500
+
+@app.route('/admin/login', methods=['POST'])
+def admin_login():
+    try:
+        data = request.json
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            return jsonify({"error": "Email and password are required"}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT password FROM admin WHERE email = %s", (email,))
+        result = cursor.fetchone()
+
+        if result and result[0] == password:
+            session['logged_in'] = True
+            session['admin_email'] = email
+            conn.close()
+            return jsonify({"message": "Login successful", "redirect": "frontpage.html"}), 200
+        else:
+            conn.close()
+            return jsonify({"error": "Invalid email or password"}), 401
+
+    except mysql.connector.Error as db_err:
+        return jsonify({"error": f"Database error: {db_err}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Internal error: {e}"}), 500
+
+@app.route('/admin/forgot-password', methods=['POST'])
+def forgot_password():
+    try:
+        data = request.json
+        email = data.get('email')
+        new_password = data.get('new_password')
+        confirm_password = data.get('confirm_password')
+
+        if not email or not new_password or not confirm_password:
+            return jsonify({"error": "All fields are required"}), 400
+
+        if new_password != confirm_password:
+            return jsonify({"error": "Passwords do not match"}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT email FROM admin WHERE email = %s", (email,))
+        if not cursor.fetchone():
+            conn.close()
+            return jsonify({"error": "Email not found"}), 404
+
+        cursor.execute("UPDATE admin SET password = %s WHERE email = %s", (new_password, email))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Password updated successfully"}), 200
+
+    except mysql.connector.Error as db_err:
+        return jsonify({"error": f"Database error: {db_err}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Internal error: {e}"}), 500
+
+@app.route('/admin/update-email-password', methods=['PUT'])
+def update_email_password():
+    try:
+        data = request.json
+        old_email = data.get('old_email')
+        new_email = data.get('new_email')
+        new_password = data.get('new_password')
+
+        if not old_email or not new_email or not new_password:
+            return jsonify({"error": "All fields are required"}), 400
+
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT email FROM admin WHERE email = %s", (old_email,))
+        if not cursor.fetchone():
+            conn.close()
+            return jsonify({"error": "Email not found"}), 404
+
+        cursor.execute("UPDATE admin SET email = %s, password = %s WHERE email = %s", (new_email, new_password, old_email))
+        conn.commit()
+        conn.close()
+        return jsonify({"message": "Email and password updated successfully"}), 200
+
+    except mysql.connector.Error as db_err:
+        return jsonify({"error": f"Database error: {db_err}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Internal error: {e}"}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
