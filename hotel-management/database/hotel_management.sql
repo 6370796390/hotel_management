@@ -73,4 +73,10 @@ CREATE TABLE housekeeping (
     FOREIGN KEY (staff_id) REFERENCES staff(employee_id),
     FOREIGN KEY (room_no) REFERENCES rooms(room_number)
 );
-   
+   CREATE TABLE admin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_email ON admin (email);
