@@ -1,4 +1,4 @@
-
+<!-- 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,4 +34,75 @@
         </div>
    </section>
 </body>
+</html> -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login and Register Form</title>
+    <link rel="stylesheet" href="css/login.css">
+    <script src="js/login.js" defer></script>
+</head>
+<body style="background-image: url('assets/hotel-image.jpg'); background-size: cover; background-repeat: no-repeat; background-position: center;">
+    <section id="auth_section">
+            <div class="container">
+            
+          
+              <!-- Login Form -->
+              <div class="user signinBx">
+                <div class="formBx">
+                  <form action="" onsubmit="return false;">
+                    <h2>Log In</h2>
+                    <input type="email" placeholder="Email" />
+                    <input type="password" placeholder="Password" />
+                    <input type="submit" value="Login" />
+                    <p class="signup">
+                      Don't have an account? <a href="#" onclick="showRegisterForm();">Register</a>
+                    </p>
+                    <!-- Forgot Password Link -->
+                    <p class="signup">
+                      <a href="#" onclick="showForgotPasswordForm();">Forgot Password?</a>
+                    </p>
+                  </form>
+                </div>
+              </div>
+          
+              <!-- Register Form -->
+              <div class="user signupBx">
+                <div class="formBx">
+                  <form action="" onsubmit="return false;">
+                    <h2>Create an account</h2>
+          
+                    <input type="email" placeholder="Email " />
+                    <input type="password" placeholder=" Password" />
+                    <input type="password" placeholder="Confirm Password" />
+                    <input type="submit" value="Sign Up" />
+                    <p class="signup">
+                      Already have an account? <a href="#" onclick="showLoginForm();">Log In</a>
+                    </p>
+                  </form>
+                </div>
+              </div>
+            </div>
+          
+            <!-- Forgot Password Form -->
+            <div class="forgot-password-form">
+              <div class="formBx">
+              <h2>Forgot Password</h2>
+              <form action="" onsubmit="return false;">
+               
+                    <input type="email" placeholder="Email " />
+                    <input type="password" placeholder=" New Password" />
+                    <input type="password" placeholder="Confirm New Password" />
+                    <input type="submit" value="Submit" />
+              </form>
+          
+              
+              <p><a href="#" onclick="hideForgotPasswordForm();">Cancel</a></p>
+            </div>
+            </div>
+    </section>
+</body>
+
 </html>
